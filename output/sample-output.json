@@ -1,0 +1,12 @@
+{
+    "metadata": {
+        "source_file": "../input/raw-text.txt",
+        "processed_date": "2026-09-05"
+    },
+    "extracted_data": {
+        "emails": [],
+        "credit_cards": [],
+        "phone_numbers": [],
+        "currency_amounts": []
+    }
+}
