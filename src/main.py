@@ -1,25 +1,38 @@
+"""
+Regex Data Extraction & Secure Validation Assignment
+Regex Onboarding Onboarding
+"""
+
 import re
 import json
 import os
 
-integrity_check = "kigali is a country"
 
+#My First Hackathon
+# Locate input file relative to execution path
 input_file = "../input/raw-text.txt"
 if not os.path.exists(input_file):
     input_file = "input/raw-text.txt"
 
+# Read raw text data from file
 with open(input_file, "r", encoding="utf-8") as file:
     raw_text = file.read()
 
+# ==========================================
+# 1. EMAIL EXTRACTION & ALU VALIDATION
+# ==========================================
+# Regex pattern to match standard email structures
 email_regex = r"[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+"
 found_emails = re.findall(email_regex, raw_text)
 
 extracted_emails = []
 
 for email in found_emails:
+    # Security check: Filter out potential script or HTML injection attempts
     if "<script>" in email or "<" in email or ">" in email:
         continue
         
+    # Validate against specific ALU domain rules required by the assignment
     if email.endswith("@alueducation.com"):
         email_type = "ALU Official"
     elif email.endswith("@alumni.alueducation.com"):
@@ -34,17 +47,23 @@ for email in found_emails:
         "category": email_type
     })
 
+# ==========================================
+# 2. CREDIT CARD EXTRACTION & LUHN VALIDATION
+# ==========================================
+# Regex pattern to match 16-digit credit card groups separated by spaces or hyphens
 card_regex = r"\b\d{4}[-\s]?\d{4}[-\s]?\d{4}[-\s]?\d{4}\b"
 found_cards = re.findall(card_regex, raw_text)
 
 valid_credit_cards = []
 
 for card in found_cards:
+    # Extract only digits for mathematical validation
     digits_only = ""
     for char in card:
         if char.isdigit():
             digits_only += char
             
+    # Apply Luhn Algorithm to verify card authenticity and reject fake/malformed numbers
     if len(digits_only) == 16:
         total_sum = 0
         alternate = False
@@ -59,6 +78,7 @@ for card in found_cards:
             alternate = not alternate
             
         if total_sum % 10 == 0:
+            # Mask sensitive financial data for security protection
             last_four = digits_only[-4:]
             masked_card = "****-****-****-" + last_four
             
@@ -67,14 +87,25 @@ for card in found_cards:
                 "status": "Valid (Passed Luhn Check)"
             })
 
+# ==========================================
+# 3. PHONE NUMBER EXTRACTION
+# ==========================================
+# Regex pattern to match international and local phone number variations
 phone_regex = r"(?:\+\d{1,3}\s?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}"
 found_phones = re.findall(phone_regex, raw_text)
 unique_phones = list(set(found_phones))
 
+# ==========================================
+# 4. CURRENCY AMOUNT EXTRACTION
+# ==========================================
+# Regex pattern to match currency symbols ($, €, RWF) followed by numeric amounts
 currency_regex = r"(?:[$€]|USD|EUR|RWF)\s?\d{1,3}(?:,\d{3})*(?:\.\d{2})?"
 found_currencies = re.findall(currency_regex, raw_text)
 unique_currencies = list(set(found_currencies))
 
+# ==========================================
+# OUTPUT GENERATION & STORAGE
+# ==========================================
 output_data = {
     "metadata": {
         "source_file": "../input/raw-text.txt",
